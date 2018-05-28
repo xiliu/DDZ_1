@@ -20,6 +20,7 @@ class HandGroups:
         for hand_group in self.hand_groups:
             hand_group.detail()
             print('')
+        print("手牌总共有可能牌型"+str(len(self.hand_groups))+"种...")
 
     def find_groups(self,group_type):
         if group_type == 1:
@@ -145,9 +146,8 @@ class HandGroups:
             same_card_index = []
             same_card_index.append(idx_b)
             idx_e = idx_b + 1
-            if self.hand_cards[idx_b].card_value > 2 and self.hand_cards[idx_b].card_value < 14 and self.hand_cards[
-                idx_e].card_value > 2 and self.hand_cards[idx_e].card_value < 14:
-                while idx_e<n:
+            if self.hand_cards[idx_b].card_value > 2 and self.hand_cards[idx_b].card_value < 14 :
+                while idx_e<n and self.hand_cards[idx_e].card_value > 2 and self.hand_cards[idx_e].card_value < 14:
                     if self.hand_cards[idx_e-1].card_value == self.hand_cards[idx_e].card_value:
                         same_card_index.append(idx_e)
                         idx_e += 1
@@ -178,21 +178,30 @@ class HandGroups:
                 continue
 
         #从树中选去连牌
-        print("总共有"+str(len(trees))+'棵树')
+        logger.info("总共有"+str(len(trees))+'棵树')
         trees_good = []
         for tree in trees:
             if tree.get_deep_count()>4:
                 trees_good.append(tree)
-        print('筛选符合要求的树有'+str(len(trees_good))+'课')
+            #tree.detail()
+        logger.info('筛选符合要求的树有'+str(len(trees_good))+'课')
         for tree in trees_good:
-            print('深度为：',tree.get_deep_count())
-            tree.detail()
+            logger.info('深度为：'+str(tree.get_deep_count()))
+            # tree.detail()
 
         for tree in trees_good:
-            self.get_single_line_from_tree(tree)
-    def get_single_line_from_tree(self,tree):
-        print('---get_single_line_from_tree---')
-        deepth = tree.get_deep_count()
+            single_lines = tree.find_all_path()
+            logger.info('len(single_line)='+str(len(single_lines)))
+            for line in single_lines:
+                self.hand_groups.append(Group(line))
+                #self.get_sub_single_line(line)
 
-        for line_count in range(5,deepth+1):
-            pro_group_count = tree.get_pro_count()
+
+    def get_sub_single_line(self,path):
+        # logger.info('获取子单连')
+        path_l = len(path)
+        if path_l>5:
+            for n in range(5,path_l):
+                for i in range(path_l-n+1):
+                    self.hand_groups.append(Group(path[i:i+n]))
+

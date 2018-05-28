@@ -4,6 +4,7 @@ class Tree:
 
     def __init__(self,card):
         self._head = Node_card(card)
+        self.all_path = []
 
     def insert(self, path, data):
         cur = self._head
@@ -60,8 +61,47 @@ class Tree:
         else:
             return self._get_deep_count(children_node[0])+1
 
-    #获取遍历树总共有多少种可能
-    def get_pro_count(self,max_deepth):
+    #获取从根节点到叶子节点的所有路径
+    def find_all_path(self):
+        path = []
+        deep_cont = self.get_deep_count()
+
+        self._find_all_path(self._head, path,deep_cont)
+        if deep_cont >5:
+            for n in range(5,deep_cont):
+                nodes = []
+                for i in range(deep_cont-n+1):#获取要遍历的
+                    self._get_root_node(self._head, nodes, i)
+                for begin_node in nodes:
+                    path = []
+                    self._find_all_path(begin_node, path, n)
+        return self.all_path
+
+    def _get_root_node(self,root_node,nodes,deep_level):
+        if deep_level == 0:
+            nodes.append(root_node)
+        else:
+            for child in root_node.getchildren():
+                self._get_root_node(child,nodes, deep_level-1)
+
+    def _find_all_path(self,root_node,path,max_line_count):
+        if root_node is None:
+            return
+        path.append(root_node.getdata())
+
+        if len(root_node.getchildren()) == 0:#达到了叶子节点
+            self.all_path.append(copy.deepcopy(path))
+            #print('叶子节点：',root_node.getdata().detail())
+        else:
+            if len(path) == max_line_count:
+                self.all_path.append(copy.deepcopy(path))
+            else:
+                if len(root_node.getchildren()) > 0:
+                    for child in root_node.getchildren():
+                        self._find_all_path(child,path,max_line_count)
+
+        #在返回到父节点之前，在路径上删除当前节点
+        path.pop()
 
 
     def detail(self):

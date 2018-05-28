@@ -1,10 +1,11 @@
 # coding: utf-8
 
+import numpy as np
 from Card import *
 from Poker import *
 from Player import *
 from Strategy.HandGroups import *
-import numpy
+
 
 
 def factorial(n,k):
