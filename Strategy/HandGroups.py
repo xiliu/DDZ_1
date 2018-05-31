@@ -33,8 +33,10 @@ class HandGroups:
             self.get_all_bomb()
         if group_type == 14: #王炸
             self.get_king_bomb()
-        if group_type == 4:
-            self.get_all_single_line()
+        # if group_type == 4:
+        #     self.get_all_single_line()
+        if group_type == 5:
+            self.get_all_double_line()
 
 
 
@@ -146,7 +148,7 @@ class HandGroups:
             same_card_index = []
             same_card_index.append(idx_b)
             idx_e = idx_b + 1
-            if self.hand_cards[idx_b].card_value > 2 and self.hand_cards[idx_b].card_value < 14 :
+            if self.hand_cards[idx_b].card_value != 2 and self.hand_cards[idx_b].card_value < 14 :
                 while idx_e<n and self.hand_cards[idx_e].card_value > 2 and self.hand_cards[idx_e].card_value < 14:
                     if self.hand_cards[idx_e-1].card_value == self.hand_cards[idx_e].card_value:
                         same_card_index.append(idx_e)
@@ -205,3 +207,59 @@ class HandGroups:
                 for i in range(path_l-n+1):
                     self.hand_groups.append(Group(path[i:i+n]))
 
+
+    def get_all_double_line(self):
+        idx_b = 0
+        n = len(self.hand_cards)
+        all_same_card = []
+        while idx_b < n:
+            same_card_index = []
+            same_card_index.append(idx_b)
+            idx_e = idx_b + 1
+            if self.hand_cards[idx_b].card_value != 2 and self.hand_cards[idx_b].card_value < 14:
+                while idx_e < n and self.hand_cards[idx_e].card_value != 2 and self.hand_cards[idx_e].card_value < 14:
+                    if self.hand_cards[idx_e - 1].card_value == self.hand_cards[idx_e].card_value:
+                        same_card_index.append(idx_e)
+                        idx_e += 1
+                    elif self.hand_cards[idx_e - 1].card_value != self.hand_cards[idx_e].card_value:
+                        break
+            same_card_count = len(same_card_index)
+            if same_card_count>1:
+                same_card = []
+                for idx in same_card_index:
+                    same_card.append(self.hand_cards[idx])
+                all_same_card.append(same_card)
+            idx_b = idx_e
+
+        print('-------所有相等的牌------')
+        for same_item in all_same_card:
+            for card in same_item:
+                card.detail()
+            print("")
+
+        # 过滤掉连续量小于3个的
+        series_begin_index =0
+        all_same_card_series = []
+        for i in range(len(all_same_card)):
+            if i < len(all_same_card) - 2:
+                if all_same_card[i][0].card_value +1 != all_same_card[i+1][0].card_value:
+                    if i - series_begin_index>1:#联系值大于等于3个
+                        all_same_card_series.append(all_same_card[series_begin_index:i+1])
+                    series_begin_index = i+1
+
+            elif i == len(all_same_card) - 2:
+                if all_same_card[i][0].card_value + 1 == all_same_card[i + 1][0].card_value or (all_same_card[i][0].card_value ==13 and all_same_card[i+1][0].card_value==1):
+                    if (i - series_begin_index +1)>1:#联系值大于等于3个
+                        all_same_card_series.append(all_same_card[series_begin_index:i+2])
+                        series_begin_index = i+2
+                else:
+                    if (i - series_begin_index) > 1:  # 联系值大于等于3个
+                        all_same_card_series.append(all_same_card[series_begin_index:i + 1])
+                        series_begin_index = i + 1
+        print('-------过滤后满足3连的牌------')
+        for card_series in all_same_card_series:
+            for same_cards in card_series:
+                for card in same_cards:
+                    card.detail()
+            print("")
+        print('----------------------')
