@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import itertools
+import Utils.basic_util as basic_util
+from Utils.Cartesian import *
 from Strategy.Group import *
 from Strategy.Tree import *
 import logging
@@ -231,31 +233,34 @@ class HandGroups:
                 all_same_card.append(same_card)
             idx_b = idx_e
 
-        print('-------所有相等的牌------')
-        for same_item in all_same_card:
-            for card in same_item:
-                card.detail()
-            print("")
+        # print('-------所有相等的牌------')
+        # for same_item in all_same_card:
+        #     for card in same_item:
+        #         card.detail()
+        #     print("")
 
-        # 过滤掉连续量小于3个的
+        # 过滤掉连续量小于3个的，并将不同"多牌"连分开
         series_begin_index =0
         all_same_card_series = []
         for i in range(len(all_same_card)):
             if i < len(all_same_card) - 2:
                 if all_same_card[i][0].card_value +1 != all_same_card[i+1][0].card_value:
-                    if i - series_begin_index>1:#联系值大于等于3个
+                    if i - series_begin_index>1:#连续值大于等于3个
                         all_same_card_series.append(all_same_card[series_begin_index:i+1])
                     series_begin_index = i+1
-
             elif i == len(all_same_card) - 2:
                 if all_same_card[i][0].card_value + 1 == all_same_card[i + 1][0].card_value or (all_same_card[i][0].card_value ==13 and all_same_card[i+1][0].card_value==1):
-                    if (i - series_begin_index +1)>1:#联系值大于等于3个
+                    if (i - series_begin_index +1)>1:#连续值大于等于3个
                         all_same_card_series.append(all_same_card[series_begin_index:i+2])
                         series_begin_index = i+2
                 else:
-                    if (i - series_begin_index) > 1:  # 联系值大于等于3个
+                    if (i - series_begin_index) > 1:  # 连续值大于等于3个
                         all_same_card_series.append(all_same_card[series_begin_index:i + 1])
                         series_begin_index = i + 1
+
+        #将多牌序列量大于3的序列，找出满足条件的子序列
+        #TODO..
+
         print('-------过滤后满足3连的牌------')
         for card_series in all_same_card_series:
             for same_cards in card_series:
@@ -263,3 +268,33 @@ class HandGroups:
                     card.detail()
             print("")
         print('----------------------')
+
+        #从不同的"多牌"序列中组合不同的"对牌连"
+        all_double_series = []
+        for card_series in all_same_card_series:#变量不同"多牌"序列
+            all_double_card = [] #将"多牌"序列中的"多牌"转换成所有可能的对牌
+            for same_cards in card_series:
+                double_cards = list(itertools.combinations(same_cards, 2))
+                all_double_card.append(double_cards)
+
+            cartesian = Cartesian(all_double_card)
+            all_double_series.extend(cartesian.assemble())
+
+        for double_serie in all_double_series:
+            group_double_card = []
+            for same_cards in double_serie:
+                for card in same_cards:
+                    group_double_card.append(card)
+            self.hand_groups.append(Group(group_double_card))
+
+
+        print('-------所有对子连------')
+        for double_serie in all_double_series:
+            for same_cards in double_serie:
+                for card in same_cards:
+                    card.detail()
+            print('')
+        print('---------------------')
+
+
+

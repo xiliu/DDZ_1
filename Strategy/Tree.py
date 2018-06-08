@@ -152,19 +152,3 @@ class Node_card:
             if child.getdata().card_type == data.card_type and child.getdata().card_value == data.card_value:
                 return child
         return None
-
-
-# if __name__ == '__main__':
-#
-#     tree = tree()
-#     tree.linktohead(a)
-#
-#     # testcase
-#     print('Node', tree.search("ABE").getdata())
-#     print('Node', tree.search("ABC").getdata())
-#     print('Node', tree.search("AHM").getdata())
-#     tree.insert("ABCD", 1)
-#     for i in d.getchildren():
-#         print('value after', d.getdata(), ' is ', i.getdata())
-#
-#     tree.detail(a)
