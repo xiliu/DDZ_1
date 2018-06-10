@@ -258,16 +258,33 @@ class HandGroups:
                         all_same_card_series.append(all_same_card[series_begin_index:i + 1])
                         series_begin_index = i + 1
 
+        all_sub_same_card_series = []
         #将多牌序列量大于3的序列，找出满足条件的子序列
-        #TODO..
-
-        print('-------过滤后满足3连的牌------')
         for card_series in all_same_card_series:
-            for same_cards in card_series:
-                for card in same_cards:
-                    card.detail()
-            print("")
-        print('----------------------')
+            n = len(card_series)
+            if n>3:
+                for sub_count in range(3,n):#子序列个数3，4...n
+                    for b_idx in range(n-sub_count+1):#起始下标
+                        all_sub_same_card_series.append(copy.deepcopy(card_series[b_idx:b_idx+sub_count]))
+
+        if len(all_sub_same_card_series) >1:
+            all_same_card_series.extend(all_sub_same_card_series)
+
+            # print('-------过滤后子‘多牌’连的牌------')
+            # for card_series in all_sub_same_card_series:
+            #     for same_cards in card_series:
+            #         for card in same_cards:
+            #             card.detail()
+            #     print("")
+            # print('----------------------')
+
+        # print('-------过滤后满足大于等于3连的牌------')
+        # for card_series in all_same_card_series:
+        #     for same_cards in card_series:
+        #         for card in same_cards:
+        #             card.detail()
+        #     print("")
+        # print('----------------------')
 
         #从不同的"多牌"序列中组合不同的"对牌连"
         all_double_series = []
@@ -288,13 +305,13 @@ class HandGroups:
             self.hand_groups.append(Group(group_double_card))
 
 
-        print('-------所有对子连------')
-        for double_serie in all_double_series:
-            for same_cards in double_serie:
-                for card in same_cards:
-                    card.detail()
-            print('')
-        print('---------------------')
+        # print('-------所有对子连------')
+        # for double_serie in all_double_series:
+        #     for same_cards in double_serie:
+        #         for card in same_cards:
+        #             card.detail()
+        #     print('')
+        # print('---------------------')
 
 
 
