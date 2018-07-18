@@ -6,9 +6,10 @@ logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(le
 logger = logging.getLogger(__name__)
 
 class Group:
-    def __init__(self,cards):
+    def __init__(self,cards,group_type=-1):
         self.group_cards = cards    #组合牌序列
-        self.group_type = -1        #组合牌型
+        self.group_type = group_type        #组合牌型
+
         #要做归一化TODO
         self.defense_value = -1     #*该组合牌防守价值，通过被动出牌打出去的值（为0时，该组合牌最小，不可能通过被动出牌打出去的，越大越好）
         self.attack_value = -1      #*该组合牌攻击价值，该组合牌打出去被'吃掉'的值（为0时，对手没有大于该组合的牌，越小越好）

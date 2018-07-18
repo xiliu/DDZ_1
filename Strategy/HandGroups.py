@@ -37,14 +37,16 @@ class HandGroups:
             self.get_king_bomb()
         # if group_type == 4:
         #     self.get_all_single_line()
-        if group_type == 5:
+        if group_type == 5:   #对连
             self.get_all_double_line()
+        if group_type == 6:   #三连（飞机不带）
+            self.get_all_three_line()
 
 
 
     def get_all_single(self):
         for card in self.hand_cards:
-            group = Group([card])
+            group = Group([card],group_type=1)
             self.hand_groups.append(group)
 
     def get_all_double(self):
@@ -68,12 +70,12 @@ class HandGroups:
         for item in all_same_value_card_index:
             same_value_count = len(item)
             if same_value_count == 2:
-                group = Group([self.hand_cards[item[0]],self.hand_cards[item[1]]])
+                group = Group([self.hand_cards[item[0]],self.hand_cards[item[1]]],group_type=2)
                 self.hand_groups.append(group)
             elif same_value_count > 2:
                 for i in range(same_value_count):
                     for j in range(i+1,same_value_count,1):
-                        group = Group([self.hand_cards[item[i]],self.hand_cards[item[j]]])
+                        group = Group([self.hand_cards[item[i]],self.hand_cards[item[j]]],group_type=2)
                         self.hand_groups.append(group)
 
     def get_all_three(self):
@@ -102,7 +104,7 @@ class HandGroups:
                     group_card = []
                     for idx in group_item_idx:
                         group_card.append(self.hand_cards[idx])
-                    group = Group(group_card)
+                    group = Group(group_card,group_type=3)
                     self.hand_groups.append(group)
 
     def get_all_bomb(self):
@@ -124,7 +126,7 @@ class HandGroups:
                 idx = idx + 1
 
         for item in all_same_value_card_index:
-            group = Group([self.hand_cards[item[0]], self.hand_cards[item[1]], self.hand_cards[item[2]], self.hand_cards[item[3]]])
+            group = Group([self.hand_cards[item[0]], self.hand_cards[item[1]], self.hand_cards[item[2]], self.hand_cards[item[3]]],group_type=13)
             self.hand_groups.append(group)
 
     def get_king_bomb(self):
@@ -134,7 +136,7 @@ class HandGroups:
                 king_card.append(card)
 
         if len(king_card) == 2:
-            group = Group([king_card[0], king_card[1]])
+            group = Group([king_card[0], king_card[1]],group_type=14)
             self.hand_groups.append(group)
 
 
@@ -197,7 +199,7 @@ class HandGroups:
             single_lines = tree.find_all_path()
             logger.info('len(single_line)='+str(len(single_lines)))
             for line in single_lines:
-                self.hand_groups.append(Group(line))
+                self.hand_groups.append(Group(line,group_type=4))
                 #self.get_sub_single_line(line)
 
 
@@ -207,7 +209,7 @@ class HandGroups:
         if path_l>5:
             for n in range(5,path_l):
                 for i in range(path_l-n+1):
-                    self.hand_groups.append(Group(path[i:i+n]))
+                    self.hand_groups.append(Group(path[i:i+n],group_type=4))
 
 
     def get_all_double_line(self):
@@ -302,7 +304,7 @@ class HandGroups:
             for same_cards in double_serie:
                 for card in same_cards:
                     group_double_card.append(card)
-            self.hand_groups.append(Group(group_double_card))
+            self.hand_groups.append(Group(group_double_card,group_type=5))
 
 
         # print('-------所有对子连------')
@@ -313,5 +315,61 @@ class HandGroups:
         #     print('')
         # print('---------------------')
 
+    def get_all_three_line(self):
+        print("--------get_all_three_line-------")
+        for hand_group in self.hand_groups:
+            # print(hand_group.group_type)
+            if hand_group.group_type == 3:
+                hand_group.detail()
+                print('')
+        print("--------------------------")
 
+        # #获取连续"飞机"牌，数据结构 [[[group(♠3 ♣3 ♦3 ),group(♠3 ♣3 ♥3 )],[group(♠4 ♣4 ♦4 )]],[[group(♠J ♣J ♦J ))],[group(♠Q ♣Q ♦Q )]]]
+        all_series_group = []
+        series_group = []   #一个满足"飞机"的连续牌，可能可以组合多个"飞机"牌
+        same_value_group = [] #存放相同值得"三牌"组
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 3 and 2 < hand_group.group_cards[0].card_value < 14:
+                if len(same_value_group) ==0:
+                    same_value_group.append(tuple(copy.deepcopy(hand_group.group_cards)))
+                else:
+                    if same_value_group[-1][0].card_value == hand_group.group_cards[0].card_value:
+                        same_value_group.append(tuple(copy.deepcopy(hand_group.group_cards)))
+                    elif same_value_group[-1][0].card_value+1 == hand_group.group_cards[0].card_value:
+                        series_group.append(same_value_group)
+                        same_value_group = []
+                        same_value_group.append(tuple(copy.deepcopy(hand_group.group_cards)))
+                    else:
+                        if len(series_group) == 0:
+                            same_value_group = []
+                            same_value_group.append(tuple(copy.deepcopy(hand_group.group_cards)))
+                        elif len(series_group) > 0 and series_group[-1][-1][0].card_value +1 == same_value_group[-1][0].card_value:
+                            series_group.append(same_value_group)
+                            all_series_group.append(series_group)
+
+                            series_group = []
+                            same_value_group = []
+                            same_value_group.append(tuple(copy.deepcopy(hand_group.group_cards)))
+
+        if len(series_group) > 0 and series_group[-1][-1][0].card_value + 1 == same_value_group[-1][0].card_value:
+            series_group.append(same_value_group)
+            all_series_group.append(series_group)
+
+
+        all_three_series = []
+
+        #当有序列数大于2时，找出所有子序列，如序列数为4（3，3，3-4，4，4-5，5，5-6，6，6 出现的概率很低），则找出子序列数为2，3的序列
+        #TODO..
+
+        #获取每个序列的所有组合
+        for item_series_group in all_series_group:
+            cartesian = Cartesian(item_series_group)
+            all_three_series.extend(cartesian.assemble())
+
+        for three_serie in all_three_series:
+            group_three_card = []
+            for same_cards in three_serie:
+                for card in same_cards:
+                    group_three_card.append(card)
+            self.hand_groups.append(Group(group_three_card,group_type=6))
 

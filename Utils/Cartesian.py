@@ -79,3 +79,9 @@ if __name__ == "__main__":
     # 创建cartesian对象
     cartesian = Cartesian(datagroup)
     cartesian.assemble()
+
+    all_series = []
+    all_series.extend(cartesian.assemble())
+
+    for serie in all_series:
+        print(serie)
