@@ -41,8 +41,12 @@ class HandGroups:
             self.get_all_double_line()
         if group_type == 6:   #三连（飞机不带）
             self.get_all_three_line()
-
-
+        if group_type == 7:   #三带一
+            self.get_all_three_take_one()
+        if group_type == 8:  # 三带一对
+            self.get_all_three_take_double()
+        if group_type == 9:  # 飞机带单牌
+            self.get_all_aircraft_single_card()
 
     def get_all_single(self):
         for card in self.hand_cards:
@@ -316,13 +320,13 @@ class HandGroups:
         # print('---------------------')
 
     def get_all_three_line(self):
-        print("--------get_all_three_line-------")
-        for hand_group in self.hand_groups:
-            # print(hand_group.group_type)
-            if hand_group.group_type == 3:
-                hand_group.detail()
-                print('')
-        print("--------------------------")
+        # print("--------get_all_three_line-------")
+        # for hand_group in self.hand_groups:
+        #     # print(hand_group.group_type)
+        #     if hand_group.group_type == 3:
+        #         hand_group.detail()
+        #         print('')
+        # print("--------------------------")
 
         # #获取连续"飞机"牌，数据结构 [[[group(♠3 ♣3 ♦3 ),group(♠3 ♣3 ♥3 )],[group(♠4 ♣4 ♦4 )]],[[group(♠J ♣J ♦J ))],[group(♠Q ♣Q ♦Q )]]]
         all_series_group = []
@@ -373,3 +377,73 @@ class HandGroups:
                     group_three_card.append(card)
             self.hand_groups.append(Group(group_three_card,group_type=6))
 
+    #三带一
+    def get_all_three_take_one(self):
+        all_single_group =[]
+        all_three_group =[]
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 3:
+                all_three_group.append(hand_group)
+            elif hand_group.group_type == 1:
+                all_single_group.append(hand_group)
+
+        for three_group in all_three_group:
+            three_group_cards = three_group.group_cards
+            for single_group in all_single_group:
+                three_take_one_cards = []
+                if three_group_cards[0].card_value != single_group.group_cards[0].card_value: #排除"自己带自己"的问题
+                    three_take_one_cards.extend(three_group_cards)
+                    three_take_one_cards.extend(single_group.group_cards)
+                    self.hand_groups.append(Group(three_take_one_cards, group_type=7))
+
+    #三带二
+    def get_all_three_take_double(self):
+        all_double_group =[]
+        all_three_group =[]
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 3:
+                all_three_group.append(hand_group)
+            elif hand_group.group_type == 2:
+                all_double_group.append(hand_group)
+
+        for three_group in all_three_group:
+            three_group_cards = three_group.group_cards
+            for double_group in all_double_group:
+                three_take_one_cards = []
+                if three_group_cards[0].card_value != double_group.group_cards[0].card_value: #排除"自己带自己"的问题
+                    three_take_one_cards.extend(three_group_cards)
+                    three_take_one_cards.extend(double_group.group_cards)
+                    self.hand_groups.append(Group(three_take_one_cards, group_type=8))
+
+    #飞机带单
+    def get_all_aircraft_single_card(self):
+        all_single_group = []
+        all_aircraft_group = []
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 6:
+                all_aircraft_group.append(hand_group)
+            elif hand_group.group_type == 1:
+                all_single_group.append(hand_group)
+
+        for three_group in all_aircraft_group:
+            tmp_single_group = []
+            aircraft_group_cards = three_group.group_cards
+
+            for single_group in all_single_group:#去掉三连牌中的单牌
+                is_same = False
+                for card in aircraft_group_cards:
+                    if single_group.group_cards[0].card_value == card.card_value:
+                        is_same = True
+                if not is_same:
+                    tmp_single_group.append(single_group)
+
+            n = int(len(aircraft_group_cards)/3)
+            group_list = list(itertools.combinations(tmp_single_group, n)) #获得组合
+            for single_group in group_list:
+                single_card = []
+                for g in single_group:
+                    single_card.extend(g.group_cards)
+                aircraft_single_card = []
+                aircraft_single_card.extend(aircraft_group_cards)
+                aircraft_single_card.extend(single_card)
+                self.hand_groups.append(Group(aircraft_single_card, group_type=9))
