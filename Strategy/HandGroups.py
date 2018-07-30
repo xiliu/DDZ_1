@@ -33,10 +33,12 @@ class HandGroups:
             self.get_all_three()
         if group_type == 13: #炸弹
             self.get_all_bomb()
+            self.get_all_four_take_single_card() # 四带两单
+            self.get_all_four_take_double_card() # 四带两对
         if group_type == 14: #王炸
             self.get_king_bomb()
-        # if group_type == 4:
-        #     self.get_all_single_line()
+        if group_type == 4:
+            self.get_all_single_line()
         if group_type == 5:   #对连
             self.get_all_double_line()
         if group_type == 6:   #三连（飞机不带）
@@ -47,6 +49,8 @@ class HandGroups:
             self.get_all_three_take_double()
         if group_type == 9:  # 飞机带单牌
             self.get_all_aircraft_single_card()
+        if group_type == 10:  # 飞机带单牌
+            self.get_all_aircraft_double_card()
 
     def get_all_single(self):
         for card in self.hand_cards:
@@ -447,3 +451,101 @@ class HandGroups:
                 aircraft_single_card.extend(aircraft_group_cards)
                 aircraft_single_card.extend(single_card)
                 self.hand_groups.append(Group(aircraft_single_card, group_type=9))
+
+    # 飞机带对
+    def get_all_aircraft_double_card(self):
+        all_double_group = []
+        all_aircraft_group = []
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 6:
+                all_aircraft_group.append(hand_group)
+            elif hand_group.group_type == 2:
+                all_double_group.append(hand_group)
+
+        for aircraft_group in all_aircraft_group:
+            tmp_double_group = []
+            aircraft_group_cards = aircraft_group.group_cards
+
+            for double_group in all_double_group:  # 去掉三连牌中的单牌
+                is_same = False
+                for card in aircraft_group_cards:
+                    if double_group.group_cards[0].card_value == card.card_value:
+                        is_same = True
+                if not is_same:
+                    tmp_double_group.append(double_group)
+
+            n = int(len(aircraft_group_cards) / 3)
+            if len(tmp_double_group) >= n:
+                group_list = list(itertools.combinations(tmp_double_group, n))  # 获得组合
+                for d_group in group_list:
+                    d_card = []
+                    for g in d_group:
+                        d_card.extend(g.group_cards)
+                    aircraft_single_card = []
+                    aircraft_single_card.extend(aircraft_group_cards)
+                    aircraft_single_card.extend(d_card)
+                    self.hand_groups.append(Group(aircraft_single_card, group_type=10))
+
+    # 四带两单
+    def get_all_four_take_single_card(self):
+        all_single_group = []
+        all_bomb_group = []
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 13:
+                all_bomb_group.append(hand_group)
+            elif hand_group.group_type == 1:
+                all_single_group.append(hand_group)
+
+        for bomb_group in all_bomb_group:
+            tmp_single_group = []
+            bomb_group_cards = bomb_group.group_cards
+
+            for single_group in all_single_group:  # 去掉炸弹牌中的单牌
+                is_same = False
+                for card in bomb_group_cards:
+                    if single_group.group_cards[0].card_value == card.card_value:
+                        is_same = True
+                if not is_same:
+                    tmp_single_group.append(single_group)
+
+            group_list = list(itertools.combinations(tmp_single_group, 2))  # 获得组合
+            for single_group in group_list:
+                single_card = []
+                for g in single_group:
+                    single_card.extend(g.group_cards)
+                bomb_take_single_card = []
+                bomb_take_single_card.extend(bomb_group_cards)
+                bomb_take_single_card.extend(single_card)
+                self.hand_groups.append(Group(bomb_take_single_card, group_type=11))
+
+    # 四带两对
+    def get_all_four_take_double_card(self):
+        all_double_group = []
+        all_bomb_group = []
+        for hand_group in self.hand_groups:
+            if hand_group.group_type == 13:
+                all_bomb_group.append(hand_group)
+            elif hand_group.group_type == 2:
+                all_double_group.append(hand_group)
+
+        for bomb_group in all_bomb_group:
+            tmp_double_group = []
+            bomb_group_cards = bomb_group.group_cards
+
+            for double_group in all_double_group:  # 去掉炸弹牌中的对子牌
+                is_same = False
+                for card in bomb_group_cards:
+                    if double_group.group_cards[0].card_value == card.card_value:
+                        is_same = True
+                if not is_same:
+                    tmp_double_group.append(double_group)
+
+            group_list = list(itertools.combinations(tmp_double_group, 2))  # 获得组合
+            for d_group in group_list:
+                d_card = []
+                for g in d_group:
+                    d_card.extend(g.group_cards)
+                bomb_double_card = []
+                bomb_double_card.extend(bomb_group_cards)
+                bomb_double_card.extend(d_card)
+                self.hand_groups.append(Group(bomb_double_card, group_type=12))
